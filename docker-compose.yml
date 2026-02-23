@@ -1,0 +1,109 @@
+version: '3.8'
+
+services:
+
+  # =========================
+  # NGINX (API)
+  # =========================
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - api
+    networks:
+      - meet-network
+
+  # =========================
+  # MYSQL
+  # =========================
+  db:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: meet
+      MYSQL_USER: meet
+      MYSQL_PASSWORD: meet
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - meet-network
+
+  # =========================
+  # API
+  # =========================
+  api:
+    build: ./api
+    restart: always
+    expose:
+      - "3000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+    networks:
+      - meet-network
+
+  # =========================
+  # JITSI STACK
+  # =========================
+  web:
+    image: jitsi/web:stable
+    restart: always
+    ports:
+      - "8081:80"
+    env_file:
+      - .env
+    networks:
+      - meet-network
+    depends_on:
+      - prosody
+      - jicofo
+      - jvb
+
+  prosody:
+    image: jitsi/prosody:stable
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - meet-network
+
+  jicofo:
+    image: jitsi/jicofo:stable
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - meet-network
+
+  jvb:
+    image: jitsi/jvb:stable
+    restart: always
+    ports:
+      - "10000:10000/udp"
+    env_file:
+      - .env
+    networks:
+      - meet-network
+
+  jibri:
+    image: jitsi/jibri:stable
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ./recordings:/recordings
+    networks:
+      - meet-network
+
+volumes:
+  mysql_data:
+
+networks:
+  meet-network:
+    driver: bridge

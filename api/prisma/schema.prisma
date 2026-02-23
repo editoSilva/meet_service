@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model ApiKey {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  name      String
+  status    ApiKeyStatus @default(ACTIVE)
+  createdAt DateTime @default(now())
+}
+
+enum ApiKeyStatus {
+  ACTIVE
+  REVOKED
+}
+
+model Meeting {
+  id              String   @id @default(uuid())
+  roomName        String   @unique
+  startAt         DateTime
+  endAt           DateTime
+  status          Status   @default(SCHEDULED)
+  maxParticipants Int
+  createdAt       DateTime @default(now())
+  participants    Participant[]
+}
+
+model Participant {
+  id        String  @id @default(uuid())
+  name      String
+  email     String
+  role      Role
+  meetingId String
+  meeting   Meeting @relation(fields: [meetingId], references: [id])
+}
+
+enum Status {
+  SCHEDULED
+  ACTIVE
+  FINISHED
+}
+
+enum Role {
+  MODERATOR
+  PATIENT
+}
