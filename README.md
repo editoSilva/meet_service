@@ -1,16 +1,18 @@
-# meet_service
+# MEET SERVICE
 
-## ESTRUTURA DO PROJETO
-# ---------------------------------------------------------------------------
+
+## 📁 Estrutura do Projeto
+
+```text
 meet-project/
 │
-├── docker-compose.yml
-├── .env
+├── docker-compose.yml      # Orquestração dos containers
+├── .env                    # Variáveis de ambiente
 │
-├── nginx/
+├── nginx/                  # Reverse proxy
 │   └── nginx.conf
 │
-├── api/
+├── api/                    # Backend Fastify
 │   ├── Dockerfile
 │   ├── package.json
 │   ├── prisma/
@@ -21,6 +23,6 @@ meet-project/
 │           ├── jitsi.js
 │           └── apiKey.js
 │
-├── recordings/
-└── jitsi/
-
+├── recordings/             # Gravações do Jitsi
+└── jitsi/                  # Configurações opcionais do Jitsi
+```
