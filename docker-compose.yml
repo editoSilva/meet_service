@@ -58,6 +58,8 @@ services:
       - "8081:80"
     env_file:
       - .env
+    volumes:
+      - ./jitsi/web:/config
     networks:
       - meet-network
     depends_on:
