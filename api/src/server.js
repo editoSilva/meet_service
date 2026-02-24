@@ -26,7 +26,7 @@ async function authenticate(request, reply) {
 // ==========================
 // Criar API Key
 // ==========================
-app.post("/admin/api-keys", async (req, reply) => {
+app.post("/api-keys", async (req, reply) => {
   const { name } = req.body
 
   const newKey = generateApiKey()
@@ -44,7 +44,7 @@ app.post("/admin/api-keys", async (req, reply) => {
 // ==========================
 // Criar Reunião
 // ==========================
-app.post("/meetings", { preHandler: authenticate }, async (req, reply) => {
+app.post("/create-meeting", { preHandler: authenticate }, async (req, reply) => {
 
   const { roomName, startAt, endAt, moderator, patients } = req.body
 
@@ -60,11 +60,51 @@ app.post("/meetings", { preHandler: authenticate }, async (req, reply) => {
           ...patients.map(p => ({ ...p, role: "PATIENT" }))
         ]
       }
+    },
+    include: {
+      participants: true
     }
   })
 
-  return { meetingId: meeting.id }
+  const baseUrl = `http://${process.env.JITSI_DOMAIN}`
+
+  const moderatorUser = meeting.participants.find(p => p.role === "MODERATOR")
+  const patientUsers = meeting.participants.filter(p => p.role === "PATIENT")
+
+  const moderatorLink = `${baseUrl}/${meeting.roomName}?jwt=${generateToken(
+    meeting.roomName,
+    moderatorUser,
+    true
+  )}`
+
+  const patientLinks = patientUsers.map(p => ({
+    email: p.email,
+    link: `${baseUrl}/${meeting.roomName}?jwt=${generateToken(
+      meeting.roomName,
+      p,
+      false
+    )}`
+  }))
+
+  return {
+    meetingId: meeting.id,
+    room: meeting.roomName,
+    status: meeting.status,
+    startAt: meeting.startAt,
+    endAt: meeting.endAt,
+    links: {
+      moderator: moderatorLink,
+      patients: patientLinks
+    }
+  }
 })
+
+
+app.get('/teste', async (req, reply) => {
+  return {
+    'message': 'API funcionando!'
+  }
+});
 
 // ==========================
 // Entrar na reunião
@@ -76,16 +116,28 @@ app.get("/meetings/:id/join", async (req, reply) => {
     include: { participants: true }
   })
 
-  if (!meeting) return reply.status(404).send()
+  if (!meeting) {
+    return reply.status(404).send({ message: "Reunião não encontrada" })
+  }
 
+  return reply.send(meeting)
+  
   const now = new Date()
 
-  if (now < meeting.startAt)
-    return reply.status(403).send({ message: "Ainda não iniciou" })
+  if (now < meeting.startAt) {
+    return reply.status(403).send({ message: "Reunião ainda não iniciou" })
+  }
 
-  if (now > meeting.endAt)
-    return reply.status(403).send({ message: "Encerrada" })
+  if (now > meeting.endAt) {
+    await prisma.meeting.update({
+      where: { id: meeting.id },
+      data: { status: "FINISHED" }
+    })
 
+    return reply.status(403).send({ message: "Reunião encerrada" })
+  }
+
+  // Se estava agendada, ativa automaticamente
   if (meeting.status === "SCHEDULED") {
     await prisma.meeting.update({
       where: { id: meeting.id },
@@ -93,17 +145,34 @@ app.get("/meetings/:id/join", async (req, reply) => {
     })
   }
 
-  const links = meeting.participants.map(p => ({
+  const baseUrl = `http://${process.env.JITSI_DOMAIN}`
+
+  const moderator = meeting.participants.find(p => p.role === "MODERATOR")
+
+  const patients = meeting.participants.filter(p => p.role === "PATIENT")
+
+  const moderatorLink = `${baseUrl}/${meeting.roomName}?jwt=${generateToken(
+    meeting.roomName,
+    moderator,
+    true
+  )}`
+
+  const patientLinks = patients.map(p => ({
     email: p.email,
-    role: p.role,
-    link: `http://${process.env.JITSI_DOMAIN}/${meeting.roomName}?jwt=${generateToken(
+    link: `${baseUrl}/${meeting.roomName}?jwt=${generateToken(
       meeting.roomName,
       p,
-      p.role === "MODERATOR"
+      false
     )}`
   }))
 
-  return links
+  return {
+    room: meeting.roomName,
+    status: "ACTIVE",
+    links: {
+      moderator: moderatorLink,
+      patients: patientLinks
+    }
+  }
 })
-
 app.listen({ port: 3000, host: "0.0.0.0" })

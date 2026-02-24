@@ -58,7 +58,13 @@ services:
     env_file:
       - .env
     volumes:
-      - ./jitsi/web:/config
+      # - ./jitsi/web:/config
+      # - ./web/config.js:/config/config.js
+      # - ./web/interface_config.js:/config/interface_config.js
+      # - ./web/custom.css:/usr/share/jitsi-meet/css/custom.
+      - ./web/interface_config.js:/config/interface_config.js
+      - ./web/custom:/config/custom
+      - ./web/images:/usr/share/jitsi-meet/images
     networks:
       - meet-network
     depends_on:

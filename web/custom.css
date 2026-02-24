@@ -1,0 +1,54 @@
+:root {
+    --statein-primary: #001a49;
+    --statein-accent: #00babf;
+    --statein-dark: #000008;
+  }
+  
+  /* Fundo geral */
+  body {
+    background-color: var(--statein-dark) !important;
+  }
+  
+  /* Top bar */
+  .toolbox-content-wrapper {
+    background-color: var(--statein-primary) !important;
+  }
+  
+  /* Botões principais */
+  .toolbox-button {
+    background-color: var(--statein-primary) !important;
+    border-radius: 12px !important;
+    transition: 0.3s ease;
+  }
+  
+  /* Hover botões */
+  .toolbox-button:hover {
+    background-color: var(--statein-accent) !important;
+  }
+  
+  /* Botão ativo */
+  .toolbox-button.toggled {
+    background-color: var(--statein-accent) !important;
+  }
+  
+  /* Chat lateral */
+  .chat-container {
+    background-color: #0a0f2a !important;
+  }
+  
+  /* Cabeçalho */
+  .subject-text {
+    color: var(--statein-accent) !important;
+    font-weight: 600;
+  }
+  
+  /* Loader */
+  .welcome-page .header {
+    background: linear-gradient(135deg, #001a49, #00babf) !important;
+  }
+  
+  /* Bordas suaves estilo SaaS */
+  .video-container {
+    border-radius: 18px !important;
+    overflow: hidden;
+  }
