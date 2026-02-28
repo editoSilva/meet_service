@@ -1,4 +1,5 @@
 
+
 services:
 
   # =========================
@@ -48,7 +49,7 @@ services:
       - meet-network
 
   # =========================
-  # JITSI STACK
+  # JITSI WEB
   # =========================
   web:
     image: jitsi/web:stable
@@ -58,28 +59,32 @@ services:
     env_file:
       - .env
     volumes:
-      # - ./jitsi/web:/config
-      # - ./web/config.js:/config/config.js
-      # - ./web/interface_config.js:/config/interface_config.js
-      # - ./web/custom.css:/usr/share/jitsi-meet/css/custom.
+      - ./web/config.js:/config/config.js
       - ./web/interface_config.js:/config/interface_config.js
       - ./web/custom:/config/custom
-      - ./web/images:/usr/share/jitsi-meet/images
-    networks:
-      - meet-network
     depends_on:
       - prosody
       - jicofo
       - jvb
+    networks:
+      - meet-network
 
+  # =========================
+  # PROSODY (XMPP)
+  # =========================
   prosody:
     image: jitsi/prosody:stable
     restart: always
     env_file:
       - .env
     networks:
-      - meet-network
+      meet-network:
+        aliases:
+          - xmpp.meet.jitsi
 
+  # =========================
+  # JICOFO
+  # =========================
   jicofo:
     image: jitsi/jicofo:stable
     restart: always
@@ -88,6 +93,9 @@ services:
     networks:
       - meet-network
 
+  # =========================
+  # JVB
+  # =========================
   jvb:
     image: jitsi/jvb:stable
     restart: always
@@ -95,16 +103,6 @@ services:
       - "10000:10000/udp"
     env_file:
       - .env
-    networks:
-      - meet-network
-
-  jibri:
-    image: jitsi/jibri:stable
-    restart: always
-    env_file:
-      - .env
-    volumes:
-      - ./recordings:/recordings
     networks:
       - meet-network
 

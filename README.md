@@ -48,3 +48,6 @@ meet-project/
 }
 
 ```
+
+docker compose exec api sh                                                                                                                          
+npx prisma db push

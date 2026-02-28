@@ -1,0 +1,14 @@
+/* Barra superior */
+#toolbar {
+    background-color: #001a49 !important;
+}
+
+/* Fundo da sala */
+#filmstrip {
+    background-color: #000000 !important;
+}
+
+/* Botões */
+button {
+    border-radius: 8px !important;
+}
