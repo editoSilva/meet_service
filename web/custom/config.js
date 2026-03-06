@@ -22,11 +22,11 @@ config.bridgeChannel = {
     preferSctp: true
 };
 
-
-// Habilita Lobby
-config.enableLobby = true;
-config.lobbyMode = 'moderator'; // apenas moderador aprova
-config.requireDisplayName = true;
+// === Lobby / Waiting Room ===
+config.enableLobby = true;  // ativa sala de espera
+config.lobbyLobby = {
+    enable: true
+};
 
 // Video configuration.
 //

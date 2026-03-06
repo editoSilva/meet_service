@@ -33,48 +33,54 @@ app.post("/api-keys", async (req, reply) => {
   return { apiKey: apiKey.key };
 });
 
-// ==========================
-// Criar Reunião
-// ==========================
-// Criar Reunião
-app.post("/create-meeting", { preHandler: authenticate }, async (req, reply) => {
-  const { roomName, startAt, endAt, moderator, patients } = req.body;
 
+// ==========================
+// Criar Reunião
+// ==========================
+app.post("/create-meeting", { preHandler: authenticate }, async (req, reply) => {
+  const { roomName, startAt, endAt, moderator, patients, maxParticipants } = req.body;
+
+  // Criar a reunião com participantes
   const meeting = await prisma.meeting.create({
     data: {
       roomName,
       startAt: new Date(startAt),
       endAt: new Date(endAt),
-      maxParticipants: parseInt(process.env.MAX_PARTICIPANTS || "10"),
+      maxParticipants: maxParticipants,
       participants: {
         create: [
-          { ...moderator, role: "MODERATOR" },
-          ...patients.map(p => ({ ...p, role: "PATIENT" }))
+          {
+            name: moderator.name,
+            email: moderator.email,
+            role: "MODERATOR"
+          },
+          ...patients.map(p => ({
+            name: p.name,
+            email: p.email,
+            role: "PATIENT"
+          }))
         ]
       }
     },
     include: { participants: true }
   });
 
-  const baseUrl = `http://localhost:8081`; // local
+  const baseUrl = `http://localhost:8081`; // URL do Jitsi
 
+  // Separar moderador e pacientes
   const moderatorUser = meeting.participants.find(p => p.role === "MODERATOR");
   const patientUsers = meeting.participants.filter(p => p.role === "PATIENT");
 
-  // Token do moderador
-  const moderatorLink = `${baseUrl}/${meeting.roomName}?jwt=${generateToken(
-    meeting.roomName,
-    moderatorUser,
-    true // booleano real
+  // Link JWT do moderador
+  const moderatorLink = `${baseUrl}/${meeting.roomName}?jwt=${encodeURIComponent(
+    generateToken(meeting.roomName, moderatorUser, true)
   )}`;
 
-  // Tokens dos pacientes
+  // Links JWT dos pacientes
   const patientLinks = patientUsers.map(p => ({
     email: p.email,
-    link: `${baseUrl}/${meeting.roomName}?jwt=${generateToken(
-      meeting.roomName,
-      p,
-      false // booleano real
+    link: `${baseUrl}/${meeting.roomName}?jwt=${encodeURIComponent(
+      generateToken(meeting.roomName, p, false)
     )}`
   }));
 
@@ -91,7 +97,7 @@ app.post("/create-meeting", { preHandler: authenticate }, async (req, reply) => 
   };
 });
 
-// ==========================
+// ========================== s
 // Entrar na reunião
 // ==========================
 app.get("/meetings/:id/join", async (req, reply) => {
@@ -106,6 +112,10 @@ app.get("/meetings/:id/join", async (req, reply) => {
 
   const moderator = meeting.participants.find(p => p.role === "MODERATOR");
   const patients = meeting.participants.filter(p => p.role === "PATIENT");
+
+  console.log('participants', patients, 'moderator', moderator);
+
+  
 
   const moderatorLink = `${baseUrl}/${meeting.roomName}?jwt=${generateToken(meeting.roomName, moderator, true)}`;
   const patientLinks = patients.map(p => ({

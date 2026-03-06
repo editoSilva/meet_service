@@ -17,16 +17,16 @@ config.hosts.muc = 'muc.' + subdomain + 'localhost';
 // Domain for authenticated users. Defaults to <domain>.
 config.hosts.authdomain = 'localhost';
 config.bosh = 'http://localhost:8081/http-bind';
-config.websocket = 'ws://localhost:8081/xmpp-websocket';;
+config.websocket = 'ws://localhost:8081/xmpp-websocket';
 config.bridgeChannel = {
     preferSctp: true
 };
 
-
-// Habilita Lobby
-config.enableLobby = true;
-config.lobbyMode = 'moderator'; // apenas moderador aprova
-config.requireDisplayName = true;
+// === Lobby / Waiting Room ===
+config.enableLobby = true;  // ativa sala de espera
+config.lobbyLobby = {
+    enable: true
+};
 
 // Video configuration.
 //

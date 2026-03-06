@@ -27,7 +27,9 @@ model Meeting {
   endAt           DateTime
   status          Status   @default(SCHEDULED)
   maxParticipants Int
+  meetingLink     String?
   createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now())
   participants    Participant[]
 }
 

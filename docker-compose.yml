@@ -5,17 +5,17 @@ services:
   # =========================
   # NGINX (API)
   # =========================
-  nginx:
-    image: nginx:alpine
-    restart: always
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-    depends_on:
-      - api
-    networks:
-      - meet-network
+  # nginx:
+  #   image: nginx:alpine
+  #   restart: always
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+  #   depends_on:
+  #     - api
+  #   networks:
+  #     - meet-network
 
   # =========================
   # MYSQL
